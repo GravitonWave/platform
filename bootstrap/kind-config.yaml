@@ -1,0 +1,23 @@
+# this config file contains all config fields with comments
+# NOTE: this is not a particularly useful config file
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: bootstrap
+# 2 control plane nodes and 2 workers
+nodes:
+  # the control plane nodes
+  - role: control-plane
+  - role: control-plane
+  # the two workers
+  - role: worker
+  - role: worker
+networking:
+  disableDefaultCNI: true  # Disables the default CNI so we can install Cilium
+  podSubnet: "10.244.0.0/16"  # Subnet used by pods (required for Cilium)
+
+kubeadmConfigPatches:
+- |
+  kind: InitConfiguration
+  nodeRegistration:
+    kubeletExtraArgs:
+      node-ip: "{{ .NodeIP }}"
