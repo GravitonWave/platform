@@ -1,12 +1,13 @@
 #!/bin/bash
 
-echo "Installing Kubernetes core services..."
+kubectl apply --kustomize ../k8s_base/metallb
+kubectl rollout status deployment controller  -n metallb-system  --timeout=300s
 
+kubectl kustomize --enable-helm ../k8s_base/ingress-nginx | kubectl apply -f -
 
-# Install Cilium using Helm
+kubectl kustomize --enable-helm ../k8s_base/gitea | kubectl apply -f -
 
-helm repo add cilium https://helm.cilium.io/
+kubectl apply --kustomize ../k8s_base/argocd
 
-helm install cilium cilium/cilium --version 1.13.2 \
-    --set k8sServiceHost=$CONTROL_PLANE_IP \
-    -f ../k8s_base/cillium/values.yaml
+kubectl apply -f ../k8s_base/metallb/ip_address_pool.yaml
+kubectl apply -f ../k8s_base/metallb/l2_advertisement.yaml

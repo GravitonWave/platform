@@ -23,6 +23,8 @@ fi
 case "$1" in
   create)
     ./scripts/init_kind.sh
+    cd scripts
+    ./install_k8s_core_services.sh
     ;;
   remove)
     ./scripts/remove_kind.sh

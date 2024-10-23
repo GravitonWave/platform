@@ -1,0 +1,12 @@
+# kustomization.yml
+namespace: gitea
+resources:
+  -  namespace.yaml
+
+helmCharts:
+- name: gitea
+  repo: oci://registry-1.docker.io/giteacharts
+  releaseName: gitea
+  namespace: gitea
+  version: 10.5.0
+  valuesFile: values.yaml

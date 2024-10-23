@@ -1,7 +1,0 @@
-apiVersion: metallb.io/v1beta1
-kind: IPAddressPool
-metadata:
-  name: nginx-ingress
-spec:
-  addresses:
-  - 172.18.0.10/32
