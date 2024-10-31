@@ -1,7 +1,7 @@
 # kustomization.yml
 namespace: ingress-nginx
 resources:
-  -  namespace.yaml
+  - namespace.yaml
 
 helmCharts:
 - name: ingress-nginx

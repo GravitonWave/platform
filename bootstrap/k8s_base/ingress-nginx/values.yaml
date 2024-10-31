@@ -1,3 +1,5 @@
 controller:
   service:
     externalTrafficPolicy: Cluster
+tcp:
+  22: "gitea/gitea-ssh:22"

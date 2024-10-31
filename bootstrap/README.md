@@ -1,134 +1,145 @@
-# Kind Cluster Bootstrap Script
+# Bootstrap Project
 
-This script bootstraps a **Kind** (Kubernetes in Docker) cluster, which can be used to host Kubernetes-based infrastructure tools. It is designed to configure a local Kubernetes environment that can be used to create and manage local or cloud resources.
+This project provides a streamlined setup for initializing a Kubernetes environment using [Kind](https://kind.sigs.k8s.io/) and installing essential tools and services. The setup includes core services like ArgoCD, Gitea, and MetalLB, with automation for configuration and management tasks.
 
-## Purpose
+## Project Structure
 
-The primary goal of this script is to help users set up a Kind cluster for use with Kubernetes infrastructure management tools. The Kind cluster can be used to deploy and manage tools such as CI/CD pipelines, monitoring systems, local development environments, or any Kubernetes-based infrastructure.
+- `k8s_base/`: Contains Kubernetes manifests for deploying essential services.
+  - `argocd/`: Manifests for deploying ArgoCD, a continuous delivery tool for Kubernetes.
+  - `crossplane/`: Manifests for deploying Crossplane, a Kubernetes-based control plane.
+  - `gitea/`: Manifests for deploying Gitea, a lightweight Git service.
+  - `ingress-nginx/`: Manifests for deploying the NGINX Ingress Controller.
+  - `metallb/`: Manifests for deploying MetalLB, a load-balancer for bare metal clusters.
 
-## Folder Structure
+- `scripts/`: Shell scripts to automate various setup and teardown tasks.
+  - `install_tools.sh`: Installs necessary tools on the local machine (e.g., Helm, kubectl, jq).
+  - `pre-config.sh`: Pre-configuration script for generating SSH keys and setting up necessary configurations.
+  - `init_kind.sh`: Initializes the Kind cluster using the provided configuration.
+  - `install_k8s_core_services.sh`: Installs core services in the Kind cluster (e.g., ArgoCD, Gitea, MetalLB).
+  - `post-config.sh`: Post-configuration script for tasks like updating ArgoCD and Gitea configurations.
+  - `remove_kind.sh`: Destroys the Kind cluster and removes related configurations.
 
-```
-BOOTSTRAP/
-  ├── base/
-  │     ├── argo-cd/
-  │     ├── crossplane/
-  │     ├── gitea/
-  │     └── metallb/
-  │           ├── addresspool.yaml
-  │           └── values.yaml
-  ├── bootstrap.sh
-  ├── get_helm.sh
-  ├── kind-config.yaml
-  ├── scripts/
-  │     ├── helper_functions.sh
-  │     ├── init_kind.sh
-  │     ├── remove_kind.sh
-  │     └── install_k8s_core_services.sh
-  └── README.md
-```
+- `ssh/`: Contains SSH keys used for authentication with Gitea.
+  - `sshkey`: Private SSH key for accessing Gitea.
+  - `sshkey.pub`: Public SSH key for accessing Gitea.
 
-## Script Descriptions
+- `bootstrap.sh`: Main script to manage the Kind cluster setup and teardown.
+- `kind-config.yaml`: Configuration file for initializing the Kind cluster.
 
-- **bootstrap.sh**: The main entry point for managing the Kind cluster. Supports the following commands:
-  - `create`: Create or recreate the Kind cluster based on the `kind-config.yaml` file.
-  - `remove`: Remove the existing Kind cluster.
-  - `help`: Display usage information.
+## Getting Started
 
-- **get_helm.sh**: A script to install Helm, which is used for managing Kubernetes packages.
+### Prerequisites
 
-- **kind-config.yaml**: The configuration file for the Kind cluster, defining cluster settings such as networking and node configurations.
+Ensure the following tools are installed on your system:
+- [Docker](https://docs.docker.com/get-docker/): Required for Kind to run Kubernetes clusters.
+- [jq](https://stedolan.github.io/jq/): Required for JSON parsing.
+- [kubectl](https://kubernetes.io/docs/tasks/tools/): CLI for interacting with Kubernetes clusters.
+- [Helm](https://helm.sh/): Package manager for Kubernetes.
 
-- **scripts/helper_functions.sh**: Contains shared functions that are used across multiple scripts, such as package manager detection and command existence checks.
+These tools can be installed using the `install_tools.sh` script, which will prompt you for installation if they are not found.
 
-- **scripts/init_kind.sh**: Initializes the Kind cluster. It installs dependencies, installs Kind, and creates the cluster as defined in `kind-config.yaml`.
+### Usage
 
-- **scripts/remove_kind.sh**: Removes an existing Kind cluster based on the configuration in `kind-config.yaml`.
+The main `bootstrap.sh` script supports the following commands:
 
-- **scripts/install_k8s_core_services.sh**: A placeholder script for installing and configuring Kubernetes core services, such as Helm, Ingress controllers, and other components.
-
-## Prerequisites
-
-Before executing this script, ensure that the following prerequisites are met:
-
-- Docker installed and running.
-- Your local user has access to the Docker daemon (without requiring `sudo`):
-  - You can add your user to the Docker group with the following command:
-    ```bash
-    sudo usermod -aG docker $USER
-    ```
-  - After running this command, **log out and log back in** or reboot the system for the changes to take effect.
-
-## Compatible Linux Distributions
-
-The script has been tested on and is compatible with the following Linux distributions:
-
-- **Ubuntu** 18.04/20.04/22.04
-- **Debian** 10/11
-- **Fedora** 33/34/35
-- **CentOS** 7/8
-- **RHEL** 7/8
-- **openSUSE** Leap 15.x
-
-## Usage
-
-To get started, navigate to the `BOOTSTRAP` directory and run the `bootstrap.sh` script.
-
-### Create the Kind Cluster
-
-```sh
-./bootstrap.sh create
+```bash
+./bootstrap.sh {create|add|install|destroy|remove|uninstall|help}
 ```
 
-This command will:
-1. Ensure required dependencies are installed.
-2. Install Kind if it's not already installed.
-3. Create a Kubernetes Kind cluster based on `kind-config.yaml`.
+- **create, add, install**: Creates or recreates a Kind cluster and installs core services.
+- **destroy, remove, uninstall**: Removes the Kind cluster and cleans up configurations.
+- **help**: Displays usage information.
 
-### Remove the Kind Cluster
+### Example Commands
 
-```sh
-./bootstrap.sh remove
+1. **Initialize the Kind Cluster**:
+   ```bash
+   ./bootstrap.sh create
+   ```
+
+2. **Remove the Kind Cluster**:
+   ```bash
+   ./bootstrap.sh destroy
+   ```
+
+### Script Descriptions
+
+1. **install_tools.sh**: Installs essential tools such as `kubectl`, `jq`, and `Helm`. If any of these tools are missing, the script will prompt you to install them.
+   
+2. **pre-config.sh**: Prepares the environment by generating SSH keys, configuring Gitea SSH settings, and creating a bootstrap repository in Gitea if it doesn't exist. It also updates the ArgoCD admin password.
+
+3. **init_kind.sh**: Initializes the Kind cluster using the configuration provided in `kind-config.yaml`.
+
+4. **install_k8s_core_services.sh**: Deploys core services like ArgoCD, Gitea, and MetalLB in the Kind cluster.
+
+5. **post-config.sh**: Updates ArgoCD and Gitea configurations with new SSH keys or repository settings.
+
+6. **remove_kind.sh**: Destroys the Kind cluster, removes configurations, and performs clean-up tasks.
+
+## Access and Authentication
+
+- **Gitea**: The Gitea service is accessible at [https://gitea.172.18.255.1.nip.io](https://gitea.172.18.255.1.nip.io). The default admin user is `gitea_admin`, and the default password is `bootstrap`.
+- **ArgoCD**: The ArgoCD service is accessible at [https://argocd.172.18.255.1.nip.io](https://argocd.172.18.255.1.nip.io). The default admin user is `admin`, and the default password is `bootstrap`.
+- **SSH Keys**: The SSH keys used for internal access to Gitea are automatically generated and configured during the setup process. Since these are internal keys, they need to be accepted when prompted.
+
+## SSH Key Management
+
+The `ssh/` directory contains the SSH keys used for authentication with Gitea. The `pre-config.sh` script generates these keys if they do not already exist and adds them to Gitea automatically. If an existing key with the same title is found, it will be deleted and replaced with the newly generated key.
+
+## Networking
+
+To configure the network for the Kind cluster and MetalLB, it is important to align the IP ranges between the Docker bridge network and the Kubernetes services.
+
+### Inspecting the Kind Network
+
+Kind uses Docker to create a bridge network for managing container communications. To determine the subnet used by Kind, you can inspect the Docker network with the following command:
+
+```bash
+docker network inspect kind
 ```
 
-This command will remove the Kind cluster as defined in the `kind-config.yaml` file.
+This command will output information about the `kind` network, including the subnet and gateway, similar to the following:
 
-### Help
-
-To display help information:
-
-```sh
-./bootstrap.sh help
+```json
+{
+    "Subnet": "172.18.0.0/16",
+    "Gateway": "172.18.0.1"
+}
 ```
 
-## Installing Helm
+The `Subnet` value (`172.18.0.0/16` in this example) represents the IP range used by the Kind network. It is important that the IP addresses used by MetalLB for load balancing fall within this range.
 
-To install Helm, run the provided script:
+### Configuring MetalLB
 
-```sh
-./get_helm.sh
+In the `k8s_base/metallb/ip_address_pool.yaml` file, set the `addresses` field to a range within the Kind network subnet. For example:
+
+```yaml
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: default
+  namespace: metallb-system
+spec:
+  addresses:
+  - 172.18.255.1-172.18.255.250
 ```
 
-This will install Helm version 3, which is required for managing Kubernetes packages.
+This configuration ensures that the IP addresses assigned by MetalLB for load balancing are within the same subnet as the Kind network.
 
-## Customizing the Setup
+### Configuring Ingress Endpoints
 
-- **Kind Configuration**: Modify `kind-config.yaml` to customize the Kind cluster (e.g., node count, cluster name, networking settings).
-- **Kubernetes Core Services**: Update `scripts/install_k8s_core_services.sh` to add your desired Kubernetes components, such as ingress controllers, monitoring tools, or other resources.
-- **Additional Configurations**: The `base/` directory contains configurations for additional tools (e.g., Argo CD, Crossplane, Gitea, MetalLB). Modify or extend these configurations to suit your requirements.
+The Gitea and ArgoCD services are exposed using IP addresses from the MetalLB pool. To access these services, the endpoints are configured using [nip.io](https://nip.io), which provides wildcard DNS for any IP address.
 
-## Notes
+- **Gitea**: [https://gitea.172.18.255.1.nip.io](https://gitea.172.18.255.1.nip.io)
+- **ArgoCD**: [https://argocd.172.18.255.1.nip.io](https://argocd.172.18.255.1.nip.io)
 
-- Ensure that your `$HOME/.local/bin` directory is in your `PATH` if installing Kind without root access. This script will attempt to add it if it's not already there.
-- After modifying `.bashrc`, make sure to run `source ~/.bashrc` to apply the changes.
+These endpoints allow you to easily access the services using the IP addresses assigned by MetalLB, without the need for additional DNS configuration.
 
 ## Troubleshooting
 
-- **Permission Denied**: If you encounter permission errors, ensure that the scripts have executable permissions. You can make them executable by running:
-  ```sh
-  chmod +x bootstrap.sh scripts/*.sh get_helm.sh
-  ```
-- **Docker Not Running**: The scripts require Docker to be running. Make sure Docker is installed and the daemon is running.
+- If you encounter issues with `curl` commands failing in the scripts, ensure the provided Gitea credentials are correct and the Gitea server is reachable.
+- Use `GIT_SSH_COMMAND="ssh -v"` with Git commands for verbose SSH output if there are issues with SSH key authentication.
+- The `pre-config.sh` script includes error handling for operations like updating SSH keys and creating repositories in Gitea. If any of these steps fail, the script will output an error message with the HTTP status code and exit.
 
 ## License
 

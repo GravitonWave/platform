@@ -4,10 +4,30 @@ namespace: argocd
 resources:
   - https://raw.githubusercontent.com/argoproj/argo-cd/refs/heads/master/manifests/install.yaml
   - namespace.yaml
-  - ingress.yaml
+  - argocd-server-http-ingress.yaml
+
+secretGenerator:
+- name: gitea-repository
+  files:
+  - sshPrivateKey
+  literals:
+  - url=git@gitea.172.18.255.1.nip.io:gitea_admin/bootstrap.git
+  - name=gitea
+  - project=default
+  - insecure=true
+  - enableLfs=true
+  options:
+    disableNameSuffixHash: true
+
 patches:
- - target:
-      version: v1
+  - patch: |-
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: gitea-repository
+        labels:
+          argocd.argoproj.io/secret-type: repository  
+  - path: argocd-cmd-params-cm.yaml
+    target:
       kind: ConfigMap
       name: argocd-cmd-params-cm
-   path: configmap.yaml
